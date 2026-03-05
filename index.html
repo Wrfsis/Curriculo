@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wellington dos Reis Ferreira – TI & Automação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0e14;
+      --surface:   #111620;
+      --border:    #1e2533;
+      --accent:    #00c2a8;
+      --accent2:   #3d8bff;
+      --muted:     #5a6480;
+      --text:      #c8d0e7;
+      --heading:   #eef1fa;
+      --mono:      'Space Mono', monospace;
+      --sans:      'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ─────────────────────── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: .4;
+    }
+
+    /* ── GRID LINES ────────────────────────── */
+    .grid-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: .35;
+    }
+
+    /* ── LAYOUT ────────────────────────────── */
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── NAV ───────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11,14,20,.85);
+      backdrop-filter: blur(12px);
+    }
+    nav .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .nav-brand {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: .08em;
+    }
+    .nav-links { display: flex; gap: 28px; }
+    .nav-links a {
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ──────────────────────────────── */
+    header {
+      padding: 100px 0 80px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: fadeUp .6s .1s forwards;
+    }
+    h1 {
+      font-family: var(--mono);
+      font-size: clamp(32px, 6vw, 58px);
+      font-weight: 700;
+      color: var(--heading);
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      opacity: 0;
+      animation: fadeUp .7s .2s forwards;
+    }
+    h1 span { color: var(--accent); }
+    .hero-sub {
+      margin-top: 20px;
+      font-size: 17px;
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 540px;
+      opacity: 0;
+      animation: fadeUp .7s .35s forwards;
+    }
+    .hero-sub strong { color: var(--text); font-weight: 500; }
+    .hero-tags {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      margin-top: 32px;
+      opacity: 0;
+      animation: fadeUp .7s .5s forwards;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .08em;
+      padding: 5px 12px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--muted);
+      background: var(--surface);
+      transition: border-color .2s, color .2s;
+    }
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+    .tag.hi { border-color: var(--accent); color: var(--accent); }
+
+    .hero-contact {
+      display: flex; flex-wrap: wrap; gap: 18px;
+      margin-top: 40px;
+      opacity: 0;
+      animation: fadeUp .7s .65s forwards;
+    }
+    .hero-contact a {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex; align-items: center; gap: 7px;
+      transition: color .2s;
+    }
+    .hero-contact a:hover { color: var(--accent); }
+    .hero-contact a svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* ── SECTIONS ──────────────────────────── */
+    section { padding: 72px 0; border-bottom: 1px solid var(--border); }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 14px;
+    }
+    h2 {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 36px;
+    }
+
+    /* ── SOBRE ─────────────────────────────── */
+    .sobre-grid {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 40px;
+    }
+    .sobre-text p { margin-bottom: 14px; }
+    .sobre-stats {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 18px;
+      text-align: center;
+      transition: border-color .2s;
+    }
+    .stat-box:hover { border-color: var(--accent); }
+    .stat-number {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .stat-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+
+    /* ── EXPERIÊNCIA ───────────────────────── */
+    .exp-item {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 44px;
+    }
+    .exp-item::before {
+      content: '';
+      position: absolute; left: 0; top: 6px;
+      width: 8px; height: 8px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      background: var(--bg);
+    }
+    .exp-item::after {
+      content: '';
+      position: absolute; left: 3px; top: 20px; bottom: -28px;
+      width: 1px;
+      background: var(--border);
+    }
+    .exp-item:last-child::after { display: none; }
+    .exp-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap; gap: 6px;
+      margin-bottom: 6px;
+    }
+    .exp-title {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--heading);
+    }
+    .exp-period {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .exp-company {
+      font-size: 13px;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+    .exp-body { font-size: 14px; color: var(--text); }
+    .exp-body li { margin-left: 16px; margin-bottom: 5px; }
+
+    /* ── HABILIDADES ───────────────────────── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      transition: border-color .25s, transform .25s;
+    }
+    .skill-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .skill-card-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .08em;
+      margin-bottom: 12px;
+    }
+    .skill-list { list-style: none; }
+    .skill-list li {
+      font-size: 13px;
+      color: var(--text);
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .skill-list li:last-child { border-bottom: none; }
+    .skill-list li::before { content: '›'; color: var(--accent); font-size: 16px; }
+
+    /* ── FORMAÇÃO ──────────────────────────── */
+    .edu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .edu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 22px;
+      transition: border-color .25s;
+    }
+    .edu-card:hover { border-color: var(--accent2); }
+    .edu-degree {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--heading);
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+    .edu-inst {
+      font-size: 13px;
+      color: var(--accent2);
+      margin-bottom: 4px;
+    }
+    .edu-period {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .edu-status {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .08em;
+      padding: 3px 8px;
+      border-radius: 2px;
+    }
+    .edu-status.concluido  { background: rgba(0,194,168,.1); color: var(--accent); border: 1px solid rgba(0,194,168,.3); }
+    .edu-status.cursando   { background: rgba(61,139,255,.1); color: var(--accent2); border: 1px solid rgba(61,139,255,.3); }
+    .edu-status.parcial    { background: rgba(255,180,0,.08); color: #f5b942; border: 1px solid rgba(255,180,0,.25); }
+
+    /* ── DIFERENCIAIS ──────────────────────── */
+    .diff-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .diff-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px 18px;
+      transition: border-color .25s, transform .25s;
+    }
+    .diff-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .diff-icon { font-size: 24px; margin-bottom: 10px; }
+    .diff-title {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--heading);
+      margin-bottom: 6px;
+    }
+    .diff-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── FOOTER ────────────────────────────── */
+    footer {
+      padding: 40px 0;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    footer span { color: var(--accent); }
+
+    /* ── ANIMATIONS ────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ────────────────────────── */
+    @media (max-width: 620px) {
+      .sobre-grid { grid-template-columns: 1fr; }
+      .sobre-stats { flex-direction: row; }
+      .stat-box { flex: 1; }
+      h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="wrapper">
+    <span class="nav-brand">WRF_</span>
+    <div class="nav-links">
+      <a href="#sobre">Sobre</a>
+      <a href="#experiencia">Exp.</a>
+      <a href="#habilidades">Skills</a>
+      <a href="#formacao">Formação</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header>
+  <div class="wrapper">
+    <p class="hero-label">// disponível para oportunidades em TI</p>
+    <h1>Wellington<br><span>dos Reis</span><br>Ferreira</h1>
+    <p class="hero-sub">
+      <strong>Profissional em transição para TI</strong><br>
+      Perfil técnico multidisciplinar, com mais de 20 anos resolvendo problemas reais em ambientes exigentes. Aberto a diferentes áreas de TI — levo curiosidade, adaptabilidade e vontade de contribuir para onde for.
+    </p>
+    <div class="hero-tags">
+      <span class="tag hi">Resolução de Problemas</span>
+      <span class="tag hi">Linux · 20+ anos</span>
+      <span class="tag hi">Automação com Google Sheets</span>
+      <span class="tag">Eletrônica Industrial</span>
+      <span class="tag">Lógica de Programação</span>
+      <span class="tag">Sistemas de Informação (UFU)</span>
+    </div>
+    <div class="hero-contact">
+      <a href="mailto:wrfcontatos@gmail.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        wrfcontatos@gmail.com
+      </a>
+      <a href="tel:+5534999981175">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.17 11.9a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.08 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.09 8.91A16 16 0 0 0 15 16.79l1.27-1.26a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        (34) 9 9998-1175
+      </a>
+      <a href="https://github.com/wellington-reis" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        github.com/wellington-reis
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Ribeirão Preto – SP
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- SOBRE -->
+<section id="sobre">
+  <div class="wrapper">
+    <p class="section-label">// 01</p>
+    <h2>Sobre mim</h2>
+    <div class="sobre-grid reveal">
+      <div class="sobre-text">
+        <p>
+          Profissional com mais de duas décadas de experiência prática em ambientes industriais e de gestão operacional, com forte inclinação para tecnologia, automação e resolução de problemas complexos.
+        </p>
+        <p>
+          Ao longo da carreira, desenvolvi habilidades técnicas diversas: fabricação e projetos de esquadrias de alumínio, eletrônica industrial, manutenção de máquinas e equipamentos, gestão de compras e hoje, em transição ativa para a área de Tecnologia da Informação.
+        </p>
+        <p>
+          Sou estudante de <strong>Bacharelado em Sistemas de Informação na UFU</strong> e tenho experiência prática em criação de planilhas automatizadas com Google Sheets/Scripts para otimização de processos de atendimento. Meu perfil une raciocínio lógico aguçado, criatividade técnica e vontade genuína de resolver problemas com tecnologia.
+        </p>
+        <p>
+          Busco minha primeira oportunidade formal em TI, aberto a diferentes funções e áreas. Trago como diferencial uma visão prática do mundo real, capacidade de aprender rápido e mais de 20 anos resolvendo problemas técnicos em ambientes que exigiam criatividade e autonomia.
+        </p>
+      </div>
+      <div class="sobre-stats">
+        <div class="stat-box">
+          <div class="stat-number">20+</div>
+          <div class="stat-desc">anos de experiência profissional</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">UFU</div>
+          <div class="stat-desc">Sistemas de Informação em andamento</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">2x</div>
+          <div class="stat-desc">Técnico (Eletrônica – SENAI)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIÊNCIA -->
+<section id="experiencia">
+  <div class="wrapper">
+    <p class="section-label">// 02</p>
+    <h2>Experiência</h2>
+
+    <div class="exp-item reveal">
+      <div class="exp-header">
+        <span class="exp-title">Prestador de Serviços Autônomo</span>
+        <span class="exp-period">2025 – atual</span>
+      </div>
+      <div class="exp-company">Manutenção Residencial (Autônomo) · Uberlândia, MG</div>
+      <div class="exp-body">
+        <ul>
+          <li>Atendimento a clientes particulares em serviços de manutenção predial, instalações e reparos gerais.</li>
+          <li>Gestão da própria agenda, orçamentos e relacionamento com clientes via WhatsApp.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="exp-item reveal">
+      <div class="exp-header">
+        <span class="exp-title">Analista Operacional Multifuncional</span>
+        <span class="exp-period">~2000 – 2025</span>
+      </div>
+      <div class="exp-company">Empresa Familiar de Gestão de Imóveis e Fabricação · Uberlândia, MG</div>
+      <div class="exp-body">
+        <ul>
+          <li>Iniciou como aprendiz sem remuneração; evoluiu para função de referência técnica da empresa ao longo de 25 anos.</li>
+          <li>Adaptou e implementou planilha automatizada no Google Sheets — a partir de pesquisa e estudo — para triagem e resposta ágil de mensagens de locação via WhatsApp, reduzindo tempo de atendimento.</li>
+          <li>Responsável por compras de materiais, gestão de estoque e negociação com fornecedores.</li>
+          <li>Elaboração de orçamentos e projetos de esquadrias de alumínio, com domínio de planos de corte e otimização de material.</li>
+          <li>Fabricação de peças para manutenção de máquinas e equipamentos industriais.</li>
+          <li>Manutenção preventiva e corretiva de imóveis, instalações elétricas e hidráulicas.</li>
+          <li>Atendimento e apresentação de imóveis a interessados em locação; gestão de e-mails e comunicação digital.</li>
+          <li>Criação de soluções técnicas para problemas recorrentes — cultura de melhoria contínua.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HABILIDADES -->
+<section id="habilidades">
+  <div class="wrapper">
+    <p class="section-label">// 03</p>
+    <h2>Habilidades Técnicas</h2>
+    <div class="skills-grid">
+
+      <div class="skill-card reveal">
+        <div class="skill-card-title">AUTOMAÇÃO & DADOS</div>
+        <ul class="skill-list">
+          <li>Google Sheets (avançado)</li>
+          <li>Google Apps Script</li>
+          <li>Automação de processos</li>
+          <li>Lógica de programação</li>
+          <li>Planilhas dinâmicas</li>
+        </ul>
+      </div>
+
+      <div class="skill-card reveal">
+        <div class="skill-card-title">DESENVOLVIMENTO</div>
+        <ul class="skill-list">
+          <li>Programação procedural (C)</li>
+          <li>Programação funcional</li>
+          <li>Programação para Internet</li>
+          <li>Estruturas de dados</li>
+          <li>Banco de Dados (básico)</li>
+        </ul>
+      </div>
+
+      <div class="skill-card reveal">
+        <div class="skill-card-title">SISTEMAS & SUPORTE</div>
+        <ul class="skill-list">
+          <li>Linux (usuário · 20+ anos)</li>
+          <li>Windows (uso avançado)</li>
+          <li>Lógica de sistemas digitais</li>
+          <li>Eletrônica industrial</li>
+          <li>Microprocessadores</li>
+          <li>Controladores programáveis</li>
+        </ul>
+      </div>
+
+      <div class="skill-card reveal">
+        <div class="skill-card-title">SOFT SKILLS</div>
+        <ul class="skill-list">
+          <li>Resolução criativa de problemas</li>
+          <li>Aprendizado autodidata</li>
+          <li>Comunicação com clientes</li>
+          <li>Organização e autonomia</li>
+          <li>Visão sistêmica</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FORMAÇÃO -->
+<section id="formacao">
+  <div class="wrapper">
+    <p class="section-label">// 04</p>
+    <h2>Formação Acadêmica</h2>
+    <div class="edu-grid">
+
+      <div class="edu-card reveal">
+        <div class="edu-degree">Bacharelado em Sistemas de Informação</div>
+        <div class="edu-inst">Universidade Federal de Uberlândia (UFU)</div>
+        <div class="edu-period">2021 – em andamento</div>
+        <span class="edu-status cursando">Cursando</span>
+      </div>
+
+      <div class="edu-card reveal">
+        <div class="edu-degree">Técnico em Eletrônica Industrial</div>
+        <div class="edu-inst">SENAI FIEMG – CETAL/FAM</div>
+        <div class="edu-period">2001 – 2006 · Concluído</div>
+        <span class="edu-status concluido">Concluído</span>
+      </div>
+
+      <div class="edu-card reveal">
+        <div class="edu-degree">Sistemas de Informação (início)</div>
+        <div class="edu-inst">UNIESSA – Faculdade Uberlandense</div>
+        <div class="edu-period">2021 · Transferência para UFU</div>
+        <span class="edu-status parcial">Transferido</span>
+      </div>
+
+      <div class="edu-card reveal">
+        <div class="edu-degree">Ensino Médio Completo</div>
+        <div class="edu-inst">E.E. Bueno Brandão – Uberlândia, MG</div>
+        <div class="edu-period">1997 – 1999 · Concluído</div>
+        <span class="edu-status concluido">Concluído</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIAIS -->
+<section id="diferenciais">
+  <div class="wrapper">
+    <p class="section-label">// 05</p>
+    <h2>Diferenciais</h2>
+    <div class="diff-grid">
+      <div class="diff-card reveal">
+        <div class="diff-icon">⚙️</div>
+        <div class="diff-title">Visão de Processo</div>
+        <div class="diff-desc">25 anos resolvendo problemas práticos com criatividade e recursos limitados.</div>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon">📊</div>
+        <div class="diff-title">Automação Real</div>
+        <div class="diff-desc">Adaptou e colocou em produção planilha automatizada no Google Sheets para agilizar atendimento comercial — pesquisando, entendendo a lógica e aplicando à necessidade real.</div>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon">🔌</div>
+        <div class="diff-title">Base Técnica</div>
+        <div class="diff-desc">Formação em eletrônica industrial com conhecimentos de hardware e sistemas digitais.</div>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon">📚</div>
+        <div class="diff-title">Aprendizado Contínuo</div>
+        <div class="diff-desc">Graduando em Sistemas de Informação na UFU mesmo com família e agenda intensa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrapper">
+    <p>Wellington dos Reis Ferreira &nbsp;·&nbsp; Uberlândia, MG &nbsp;·&nbsp; <span>Aberto a oportunidades em TI</span></p>
+    <p style="margin-top:8px; color: #2a3040; font-size:10px;">Gerado com HTML puro · hospedável no GitHub Pages</p>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    en
